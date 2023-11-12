@@ -1,0 +1,43 @@
+package com.upc.backend.akira.ecommerce.domain.service.Implement;
+
+import com.upc.backend.akira.ecommerce.domain.model.entity.Cart;
+import com.upc.backend.akira.ecommerce.domain.repository.CartRepository;
+import com.upc.backend.akira.ecommerce.domain.repository.ProductRepository;
+import com.upc.backend.akira.ecommerce.domain.service.CartService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+
+
+@Service
+public class CartServiceImplement implements CartService {
+
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+
+    @Autowired
+    public CartServiceImplement(CartRepository cartRepository, ProductRepository productRepository) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
+    }
+
+    @Override
+    public Cart createCart(Cart cart) {
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    public Cart addToCart(Cart cart) {
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    public void removeFromCart(Long cartId) {
+        cartRepository.deleteById(cartId);
+    }
+
+    @Override
+    public Iterable<Cart> getCartByUserId(Long userId) {
+        return cartRepository.findAllByUserId(userId);
+    }
+}
