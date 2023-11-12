@@ -1,4 +1,4 @@
-package com.upc.backend.akira.shared.config;
+package com.upc.backend.akira.shared.config.Cors;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
