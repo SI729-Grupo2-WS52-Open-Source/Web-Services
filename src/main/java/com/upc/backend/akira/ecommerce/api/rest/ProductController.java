@@ -1,10 +1,14 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
 
+import com.upc.backend.akira.ecommerce.api.dto.ProductDTO;
+import com.upc.backend.akira.ecommerce.api.dto.request.ProductRequest;
+import com.upc.backend.akira.ecommerce.api.dto.response.ProductResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
 import com.upc.backend.akira.ecommerce.domain.model.entity.Product;
 import com.upc.backend.akira.ecommerce.domain.repository.ProductRepository;
 import com.upc.backend.akira.ecommerce.domain.service.ProductService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +26,13 @@ public class ProductController {
     private ProductService productService;
 
     private final ProductRepository productRepository;
+    private final ModelMapper modelMapper;
 
-    public ProductController(ProductRepository productRepository){ this.productRepository = productRepository;}
+
+    public ProductController(ProductRepository productRepository, ModelMapper modelMapper){
+        this.productRepository = productRepository;
+        this.modelMapper = modelMapper;
+    }
 
     //URL: "http://localhost:8080/products"
     //Method: GET
@@ -39,26 +48,28 @@ public class ProductController {
 
     @Transactional
     @PostMapping("/products")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product){
-        existsById(product);
-        ValidateProduct(product);
-
-        return new ResponseEntity<Product>(productService.createProduct(product), HttpStatus.CREATED);
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
+        ValidateProductRequest(productRequest);
+        ProductDTO productDTO = modelMapper.map(productRequest, ProductDTO.class);
+        Product createdProduct = productService.createProduct(productDTO);
+        ProductResponse productResponse = modelMapper.map(createdProduct, ProductResponse.class);
+        return new ResponseEntity<>(productResponse, HttpStatus.CREATED);
     }
 
 
     //URL: "http://localhost:8080/products/{id}"
     //Method: PUT
-
-    @Transactional
     @PutMapping("/products/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product){
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
         if (!productRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        ValidateProduct(product);
-        product.setId(id);
-        return new ResponseEntity<>(productService.updateProduct(product),HttpStatus.OK);
+        ValidateProductRequest(productRequest);
+        ProductDTO productDTO = modelMapper.map(productRequest, ProductDTO.class);
+        productDTO.setId(id);
+        Product updatedProduct = productService.updateProduct(productDTO);
+        ProductResponse productResponse = modelMapper.map(updatedProduct, ProductResponse.class);
+        return new ResponseEntity<>(productResponse, HttpStatus.OK);
     }
 
 
@@ -181,45 +192,45 @@ public class ProductController {
             throw new ValidationException("A product with that ID already exists");
         }
     }
-    private void ValidateProduct(Product product){
+    private void ValidateProductRequest(ProductRequest productRequest){
 
-        if (product.getNameCategory() == null || product.getNameCategory().isEmpty()) {
+        if (productRequest.getNameCategory() == null || productRequest.getNameCategory().isEmpty()) {
             throw new ValidationException("NameCategory product must not be empty");
         }
-        if(product.getNameCategory().length() > 40){
+        if(productRequest.getNameCategory().length() > 40){
             throw new ValidationException("NameCategory product must not exceed 40 characters");
         }
-        if (product.getName() == null || product.getName().isEmpty()) {
+        if (productRequest.getName() == null || productRequest.getName().isEmpty()) {
             throw new ValidationException("Name product must not be empty");
         }
-        if(product.getName().length() > 40){
+        if(productRequest.getName().length() > 40){
             throw new ValidationException("Name product must not exceed 40 characters");
         }
-        if (product.getCategory() == null || product.getCategory().isEmpty()) {
+        if (productRequest.getCategory() == null || productRequest.getCategory().isEmpty()) {
             throw new ValidationException("Category product must not be empty");
         }
-        if(product.getCategory().length() > 40){
+        if(productRequest.getCategory().length() > 40){
             throw new ValidationException("Category product must not exceed 40 characters");
         }
-        if (product.getPrice() == null) {
+        if (productRequest.getPrice() == null) {
             throw new ValidationException("Price product must not be empty");
         }
-        if (product.getColor() == null || product.getColor().isEmpty()) {
+        if (productRequest.getColor() == null || productRequest.getColor().isEmpty()) {
             throw new ValidationException("Color product must not be empty");
         }
-        if(product.getColor().length() > 20){
+        if(productRequest.getColor().length() > 20){
             throw new ValidationException("Color product must not exceed 20 characters");
         }
-        if (product.getDescription() == null || product.getDescription().isEmpty()) {
+        if (productRequest.getDescription() == null || productRequest.getDescription().isEmpty()) {
             throw new ValidationException("Description product must not be empty");
         }
-        if(product.getDescription().length() > 100){
+        if(productRequest.getDescription().length() > 100){
             throw new ValidationException("Description product must not exceed 100 characters");
         }
-        if (product.getImage() == null || product.getImage().isEmpty()) {
+        if (productRequest.getImage() == null || productRequest.getImage().isEmpty()) {
             throw new ValidationException("Image product must not be empty");
         }
-        if(product.getImage().length() > 250){
+        if(productRequest.getImage().length() > 250){
             throw new ValidationException("Image product must not exceed 100 characters");
         }
 

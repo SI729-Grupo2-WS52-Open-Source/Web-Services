@@ -33,12 +33,19 @@ public class UserServiceImplement implements UserService {
         User existingUser = userRepository.findById(id).orElse(null);
 
         if (existingUser != null) {
-            modelMapper.map(userDTO, existingUser);
+            existingUser.setName(userDTO.getName());
+            existingUser.setSurname(userDTO.getSurname());
+            existingUser.setNumberCellphone(userDTO.getNumberCellphone());
+            existingUser.setEmail(userDTO.getEmail());
+            existingUser.setPassword(userDTO.getPassword());
+            existingUser.setPayment(userDTO.getPayment());
+
             return userRepository.save(existingUser);
         } else {
             throw new ValidationException("No existe el usuario a modificar");
         }
     }
+
 
     @Override
     public void deleteUserById(Long userId) { userRepository.deleteById(userId);}
