@@ -1,9 +1,13 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
+import com.upc.backend.akira.ecommerce.api.dto.UserDTO;
+import com.upc.backend.akira.ecommerce.api.dto.request.UserRequest;
+import com.upc.backend.akira.ecommerce.api.dto.response.UserResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
 import com.upc.backend.akira.ecommerce.domain.model.entity.User;
 import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.ecommerce.domain.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,52 +26,57 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
-    public UserController(UserRepository userRepository){
+
+    public UserController(UserRepository userRepository, ModelMapper modelMapper){
         this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
     }
 
     //URL: "http://localhost:8080/users"
     //Method: GET
-
     @Transactional(readOnly = true)
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers(){
-        return new ResponseEntity<List<User>>(userRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        List<UserResponse> userResponses = convertToUserResponses(users);
+        return new ResponseEntity<>(userResponses, HttpStatus.OK);
     }
 
 
     //URL: "http://localhost:8080/users"
     //Method: POST
-
     @Transactional
     @PostMapping("/users")
-    public ResponseEntity<User> createUser(@RequestBody User user){
-        existsById(user);
-        validateUser(user);
-        return new ResponseEntity<User>(userService.createUser(user), HttpStatus.CREATED);
+    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+        validateUserRequest(userRequest);
+        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
+        User createdUser = userService.createUser(userDTO);
+        UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
+        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
+
 
     //URL: "http://localhost:8080/users/{id}"
     //Method: PUT
-
     @Transactional
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        validateUser(user);
-        user.setId(id);
-        return new ResponseEntity<>(userService.updateUser(user), HttpStatus.OK);
+        validateUserRequest(userRequest);
+        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
+        User updatedUser = userService.updateUser(id, userDTO);
+        UserResponse userResponse = modelMapper.map(updatedUser, UserResponse.class);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
 
     //URL: "http://localhost:8080/users/{id}"
     //Method: DELETE
-
     @Transactional
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
@@ -78,75 +87,70 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+
     // URL: "http://localhost:8080/users/{id}"
     // Method: GET
-
     @Transactional(readOnly = true)
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-
-        Optional<User> user = userRepository.findById(id);
-
-        if (userRepository.existsById(id)) {
-            return new ResponseEntity<User>(user.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        return userOptional.map(user -> new ResponseEntity<>(modelMapper.map(user, UserResponse.class), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
 
     // URL: "http://localhost:8080/login?email=${data.email}&password=${data.password}"
     // Method: GET
-
     @GetMapping("/login")
-    public ResponseEntity<List<User>> userLogin(
+    public ResponseEntity<List<UserResponse>> userLogin(
             @RequestParam("email") String email,
             @RequestParam("password") String password
     ) {
         User authenticatedUser = userRepository.findByEmailAndPassword(email, password);
 
         if (authenticatedUser != null) {
-            List<User> userList = new ArrayList<>();
-            userList.add(authenticatedUser);
-            return ResponseEntity.ok(userList);
+            List<UserResponse> userResponses = new ArrayList<>();
+            userResponses.add(modelMapper.map(authenticatedUser, UserResponse.class));
+            return ResponseEntity.ok(userResponses);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
         }
     }
 
-    private void existsById(User user) {
-        Long userId = user.getId();
-        if (userId != null && userRepository.existsById(userId)) {
-            throw new ValidationException("A user with that ID already exists");
-        }
-    }
+    private void validateUserRequest(UserRequest userRequest){
 
-    private void validateUser(User user){
-
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (userRequest.getName() == null || userRequest.getName().isEmpty()) {
             throw new ValidationException("Username must not be empty");
         }
-        if(user.getName().length() > 20){
+        if(userRequest.getName().length() > 20){
             throw new ValidationException("The username must not exceed 20 characters");
         }
-        if (user.getSurname() == null || user.getSurname().isEmpty()) {
+        if (userRequest.getSurname() == null || userRequest.getSurname().isEmpty()) {
             throw new ValidationException("User last name must not be empty");
         }
-        if(user.getSurname().length() > 20){
+        if(userRequest.getSurname().length() > 20){
             throw new ValidationException("The last name must not exceed 20 characters");
         }
-        if(user.getEmail() == null || user.getEmail().isEmpty()){
+        if(userRequest.getEmail() == null || userRequest.getEmail().isEmpty()){
             throw new ValidationException("The email must not be empty");
         }
-        if(user.getEmail().length() > 40){
+        if(userRequest.getEmail().length() > 40){
             throw new ValidationException("The email must not exceed 40 characters");
         }
-        if(user.getPassword() == null || user.getPassword().isEmpty()){
+        if(userRequest.getPassword() == null || userRequest.getPassword().isEmpty()){
             throw new ValidationException("The password must not be empty");
         }
-        if(user.getPassword().length() > 30){
+        if(userRequest.getPassword().length() > 30){
             throw new ValidationException("The password must not exceed 30 characters");
         }
     }
 
+    private List<UserResponse> convertToUserResponses(List<User> users) {
+        List<UserResponse> userResponses = new ArrayList<>();
+        for (User user : users) {
+            userResponses.add(modelMapper.map(user, UserResponse.class));
+        }
+        return userResponses;
+    }
 
 }
