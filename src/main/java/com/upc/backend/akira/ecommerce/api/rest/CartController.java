@@ -1,14 +1,21 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
+import com.upc.backend.akira.ecommerce.api.dto.request.CartRequest;
+import com.upc.backend.akira.ecommerce.api.dto.response.CartResponse;
 import com.upc.backend.akira.ecommerce.domain.model.entity.Cart;
 import com.upc.backend.akira.ecommerce.domain.repository.CartRepository;
 import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.ecommerce.domain.service.CartService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
@@ -16,30 +23,37 @@ public class CartController {
 
     @Autowired
     private CartService cartService;
-
     @Autowired
+
     private UserRepository userRepository;
+    @Autowired
 
     private final CartRepository cartRepository;
+    @Autowired
 
-    public CartController(CartRepository cartRepository) {
+    private final ModelMapper modelMapper;
+
+    public CartController(UserRepository userRepository, CartRepository cartRepository, ModelMapper modelMapper) {
+        this.userRepository = userRepository;
         this.cartRepository = cartRepository;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/cart")
-    public ResponseEntity<Iterable<Cart>> getCartByUserId(@RequestParam Long userId) {
+    public ResponseEntity<Iterable<CartResponse>> getCartByUserId(@RequestParam Long userId) {
         Iterable<Cart> userCart = cartService.getCartByUserId(userId);
-        return new ResponseEntity<>(userCart, HttpStatus.OK);
+        Iterable<CartResponse> cartResponses = mapCartListToCartResponseList(userCart);
+        return new ResponseEntity<>(cartResponses, HttpStatus.OK);
     }
 
 
-    @Transactional
     @PostMapping("/cart")
-    public ResponseEntity<Cart> createCart(@RequestBody Cart cart) {
-        // existsById(cart);
-
-        return new ResponseEntity<>(cartService.createCart(cart), HttpStatus.CREATED);
+    public CartResponse createCart(@RequestBody CartRequest cartRequest) {
+        Cart cart = modelMapper.map(cartRequest, Cart.class);
+        Cart createdCart = cartService.createCart(cart);
+        return modelMapper.map(createdCart, CartResponse.class);
     }
+
 
     @DeleteMapping("/cart/{cartId}")
     public ResponseEntity<Void> removeFromCart(@PathVariable Long cartId) {
@@ -47,10 +61,13 @@ public class CartController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
-    @PostMapping
-    public ResponseEntity<Cart> addToCart(@RequestBody Cart cart) {
-        Cart addedCart = cartService.addToCart(cart);
-        return new ResponseEntity<>(addedCart, HttpStatus.CREATED);
+    private Iterable<CartResponse> mapCartListToCartResponseList(Iterable<Cart> carts) {
+        List<CartResponse> cartResponses = new ArrayList<>();
+        for (Cart cart : carts) {
+            cartResponses.add(modelMapper.map(cart, CartResponse.class));
+        }
+        return cartResponses;
     }
+
+
 }

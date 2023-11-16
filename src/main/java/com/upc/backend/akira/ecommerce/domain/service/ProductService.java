@@ -7,6 +7,6 @@ public interface ProductService {
 
     public abstract Product createProduct(ProductDTO productDTO);
     public abstract Product updateProduct(ProductDTO productDTO);
-    public abstract void  deleteProduct(Long product);
+    public abstract void deleteProduct(Long product);
 
 }
