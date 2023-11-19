@@ -1,6 +1,7 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
 import com.upc.backend.akira.ecommerce.api.dto.UserDTO;
+import com.upc.backend.akira.ecommerce.api.dto.mapper.EcommerceMapper;
 import com.upc.backend.akira.ecommerce.api.dto.request.UserRequest;
 import com.upc.backend.akira.ecommerce.api.dto.response.UserResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
@@ -52,10 +53,9 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
         validateUserRequest(userRequest);
-        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
-        User createdUser = userService.createUser(userDTO);
-        UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
-        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+        var user = EcommerceMapper.INSTANCE.UserRequestToUser(userRequest);
+        var userCreated = userService.createUser(user);
+        return new ResponseEntity<UserResponse>(EcommerceMapper.INSTANCE.UserToUserResponse(userCreated), HttpStatus.CREATED);
     }
 
 
