@@ -53,11 +53,11 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
         validateUserRequest(userRequest);
-        var user = EcommerceMapper.INSTANCE.UserRequestToUser(userRequest);
-        var userCreated = userService.createUser(user);
-        return new ResponseEntity<UserResponse>(EcommerceMapper.INSTANCE.UserToUserResponse(userCreated), HttpStatus.CREATED);
+        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
+        User createdUser = userService.createUser(userDTO);
+        UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
+        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
-
 
     //URL: "http://localhost:8080/users/{id}"
     //Method: PUT
