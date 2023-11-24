@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -180,7 +181,7 @@ public class ProductController {
         List<Product> foundProducts = productRepository.findByNameContainingIgnoreCase(query);
 
         if (foundProducts.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(foundProducts, HttpStatus.OK);
         }

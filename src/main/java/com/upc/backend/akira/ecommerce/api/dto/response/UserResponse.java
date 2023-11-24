@@ -1,6 +1,10 @@
 package com.upc.backend.akira.ecommerce.api.dto.response;
 
+import com.upc.backend.akira.ecommerce.domain.model.entity.Role;
 import lombok.Data;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class UserResponse {
@@ -12,5 +16,7 @@ public class UserResponse {
     private String email;
     private String password;
     private String payment;
+    private Set<Role> roles = new HashSet<>();
+
 
 }
