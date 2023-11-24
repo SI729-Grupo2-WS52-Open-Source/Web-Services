@@ -8,7 +8,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Clase que contiene los beans de seguridad
- * @author Jamutaq Ortega
  */
 @Configuration
 public class BeansConfig {

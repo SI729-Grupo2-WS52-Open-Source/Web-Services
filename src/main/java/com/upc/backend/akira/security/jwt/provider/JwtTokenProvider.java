@@ -13,7 +13,6 @@ import java.util.Date;
 
 /**
  * Clase que genera el token, obtiene los claims, valida el token
- * @author Jamutaq Ortega
  */
 @Slf4j
 @Component

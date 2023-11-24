@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Clase que implementa la interfaz UserDetailsService de Spring Security para obtener los datos del usuario autenticado
- * @author Jamutaq Ortega
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

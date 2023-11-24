@@ -20,7 +20,6 @@ import java.io.IOException;
 
 /**
  * Clase que se encarga de obtener, validar el token y los filtros del usuario por cada petición que se realiza
- * @author Jamutaq Ortega
  */
 @Slf4j
 @Component

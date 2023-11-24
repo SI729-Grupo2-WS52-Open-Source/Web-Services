@@ -19,7 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Clase que contiene la configuración de seguridad de la aplicación
- * @author Jamutaq Ortega
  */
 @Slf4j
 @Configuration

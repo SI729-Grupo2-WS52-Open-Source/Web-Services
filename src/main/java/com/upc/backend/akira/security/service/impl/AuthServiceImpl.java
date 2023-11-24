@@ -59,16 +59,12 @@ public class AuthServiceImpl implements AuthService {
                 .numberCellphone(request.getNumberCellphone())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
-
-        //establecer los roles
         var roles = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo registrar el usuario, no se encontró el rol USER"));
         user.setRoles(Collections.singleton(roles)); //establece un solo rol
 
-        //guarda el usuario
         var newUser = userRepository.save(user);
 
-        //mapea de la entidad al dto
         var responseData = modelMapper.map(newUser, RegisteredUserResponseDto.class);
 
         return new ApiResponse<>("Registro correcto", EStatus.SUCCESS, responseData);
@@ -76,7 +72,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse<TokenResponseDto> login(LoginRequestDto request) {
-        // Se validan las credenciales
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -84,35 +79,24 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        // Se establece la seguridad
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Se obtiene el usuario autenticado desde el repositorio
         User authenticatedUser = userRepository.findByEmail(request.getEmail());
 
-        // Verifica si el usuario es nulo
         if (authenticatedUser == null) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo obtener el usuario autenticado");
         }
 
-        // Se obtiene el userId del usuario autenticado
         Long userId = authenticatedUser.getId();
 
-        // Se obtiene el resto de la información del usuario
         String name = authenticatedUser.getName();
         String surname = authenticatedUser.getSurname();
         String numberCellphone = authenticatedUser.getNumberCellphone();
         String email = authenticatedUser.getEmail();
         String password = authenticatedUser.getPassword();
-        // Añade otros campos según sea necesario
 
-        // Se obtiene el token
         String token = jwtTokenProvider.generateToken(authentication);
-        // Asegúrate de que tu método generateToken ahora acepte estos nuevos campos
-
-        // Se crea la instancia de TokenResponseDto con el token y el userId
         var responseData = new TokenResponseDto(token, userId, name, surname, numberCellphone, email, password);
-        // Ajusta la clase TokenResponseDto para aceptar estos nuevos campos
 
         return new ApiResponse<>("Autenticación correcta", EStatus.SUCCESS, responseData);
     }

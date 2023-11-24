@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Auth")
-@SecurityRequirements //desactiva la seguridad para este controlador (swagger)
+@SecurityRequirements
 @RequestMapping("/")
 @RestController
 public class AuthController {
