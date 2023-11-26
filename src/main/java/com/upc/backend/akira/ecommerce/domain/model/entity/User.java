@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,11 +34,23 @@ public class User {
     @Column(name = "email", length = 40, nullable = false)
     private String email;
 
-    @Column(name = "password", length = 40, nullable = false)
+    @Column(name = "password",length = 500, nullable = false)
     private String password;
 
     @Column(name = "payment", length = 40, nullable = true)
     private String payment;
+
+    /**
+     * -Info: MUCHOS "usuarios" pueden tener MUCHOS "roles"
+     * -JoinTable: la tabla intermediaria que se creará
+     */
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
 
 }

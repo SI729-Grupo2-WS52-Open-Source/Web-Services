@@ -1,6 +1,7 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
 import com.upc.backend.akira.ecommerce.api.dto.UserDTO;
+import com.upc.backend.akira.ecommerce.api.dto.mapper.EcommerceMapper;
 import com.upc.backend.akira.ecommerce.api.dto.request.UserRequest;
 import com.upc.backend.akira.ecommerce.api.dto.response.UserResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
@@ -11,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,19 +45,6 @@ public class UserController {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = convertToUserResponses(users);
         return new ResponseEntity<>(userResponses, HttpStatus.OK);
-    }
-
-
-    //URL: "http://localhost:8080/users"
-    //Method: POST
-    @Transactional
-    @PostMapping("/users")
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
-        validateUserRequest(userRequest);
-        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
-        User createdUser = userService.createUser(userDTO);
-        UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
-        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
 
@@ -99,23 +88,6 @@ public class UserController {
     }
 
 
-    // URL: "http://localhost:8080/login?email=${data.email}&password=${data.password}"
-    // Method: GET
-    @GetMapping("/login")
-    public ResponseEntity<List<UserResponse>> userLogin(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password
-    ) {
-        User authenticatedUser = userRepository.findByEmailAndPassword(email, password);
-
-        if (authenticatedUser != null) {
-            List<UserResponse> userResponses = new ArrayList<>();
-            userResponses.add(modelMapper.map(authenticatedUser, UserResponse.class));
-            return ResponseEntity.ok(userResponses);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
-        }
-    }
 
     private void validateUserRequest(UserRequest userRequest){
 
