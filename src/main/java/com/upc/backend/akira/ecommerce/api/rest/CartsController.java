@@ -6,20 +6,21 @@ import com.upc.backend.akira.ecommerce.domain.model.entity.Cart;
 import com.upc.backend.akira.ecommerce.domain.repository.CartRepository;
 import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.ecommerce.domain.service.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+@Tag(name = "Carts Controller")
 @RestController
 @RequestMapping("/")
-public class CartController {
+public class CartsController {
 
     @Autowired
     private CartService cartService;
@@ -33,12 +34,14 @@ public class CartController {
 
     private final ModelMapper modelMapper;
 
-    public CartController(UserRepository userRepository, CartRepository cartRepository, ModelMapper modelMapper) {
+    public CartsController(UserRepository userRepository, CartRepository cartRepository, ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.modelMapper = modelMapper;
     }
 
+
+    @Operation(summary = "Obtiene un carrito")
     @GetMapping("/cart")
     public ResponseEntity<Iterable<CartResponse>> getCartByUserId(@RequestParam Long userId) {
         Iterable<Cart> userCart = cartService.getCartByUserId(userId);
@@ -47,6 +50,7 @@ public class CartController {
     }
 
 
+    @Operation(summary = "Registra un carrito")
     @PostMapping("/cart")
     public CartResponse createCart(@RequestBody CartRequest cartRequest) {
         Cart cart = modelMapper.map(cartRequest, Cart.class);
@@ -55,6 +59,7 @@ public class CartController {
     }
 
 
+    @Operation(summary = "Elimina un carrito")
     @DeleteMapping("/cart/{cartId}")
     public ResponseEntity<Void> removeFromCart(@PathVariable Long cartId) {
         cartService.removeFromCart(cartId);

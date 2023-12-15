@@ -2,6 +2,7 @@ package com.upc.backend.akira.security.service;
 
 import com.upc.backend.akira.security.model.dto.request.LoginRequestDto;
 import com.upc.backend.akira.security.model.dto.request.RegisterRequestDto;
+import com.upc.backend.akira.security.model.dto.request.UpdatePasswordRequestDto;
 import com.upc.backend.akira.security.model.dto.response.RegisteredUserResponseDto;
 import com.upc.backend.akira.security.model.dto.response.TokenResponseDto;
 import com.upc.backend.akira.shared.dto.response.ApiResponse;
@@ -20,4 +21,6 @@ public interface AuthService {
      * @return Token de acceso
      */
     ApiResponse<TokenResponseDto> login(LoginRequestDto request);
+
+    ApiResponse<Void> updatePassword(UpdatePasswordRequestDto updatePasswordRequest);
 }

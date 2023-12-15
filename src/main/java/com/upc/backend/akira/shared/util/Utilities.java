@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * Clase de utilidades para la seguridad y autenticación de usuarios
- * @author Jamutaq Ortega
  */
 @Slf4j
 public class Utilities {

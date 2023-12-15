@@ -1,29 +1,29 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
-import com.upc.backend.akira.ecommerce.api.dto.UserDTO;
-import com.upc.backend.akira.ecommerce.api.dto.mapper.EcommerceMapper;
 import com.upc.backend.akira.ecommerce.api.dto.request.UserRequest;
 import com.upc.backend.akira.ecommerce.api.dto.response.UserResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
 import com.upc.backend.akira.ecommerce.domain.model.entity.User;
 import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.ecommerce.domain.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+
+@Tag(name = "Users Controller")
 @RestController
 @RequestMapping("/")
-public class UserController {
+public class UsersController {
 
 
     @Autowired
@@ -32,13 +32,15 @@ public class UserController {
     private final ModelMapper modelMapper;
 
 
-    public UserController(UserRepository userRepository, ModelMapper modelMapper){
+    public UsersController(UserRepository userRepository, ModelMapper modelMapper){
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
     }
 
     //URL: "http://localhost:8080/users"
     //Method: GET
+
+    @Operation(summary = "Obtiene todos los usuarios")
     @Transactional(readOnly = true)
     @GetMapping("/users")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
@@ -50,6 +52,8 @@ public class UserController {
 
     //URL: "http://localhost:8080/users/{id}"
     //Method: PUT
+
+    @Operation(summary = "Actualizar un usuario")
     @Transactional
     @PutMapping("/users/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
@@ -57,8 +61,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         validateUserRequest(userRequest);
-        UserDTO userDTO = modelMapper.map(userRequest, UserDTO.class);
-        User updatedUser = userService.updateUser(id, userDTO);
+        User updatedUser = userService.updateUser(id, userRequest);
         UserResponse userResponse = modelMapper.map(updatedUser, UserResponse.class);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
@@ -66,6 +69,8 @@ public class UserController {
 
     //URL: "http://localhost:8080/users/{id}"
     //Method: DELETE
+
+    @Operation(summary = "Elimina un usuario")
     @Transactional
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
@@ -79,6 +84,8 @@ public class UserController {
 
     // URL: "http://localhost:8080/users/{id}"
     // Method: GET
+
+    @Operation(summary = "Obtiene un usuario")
     @Transactional(readOnly = true)
     @GetMapping("/users/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
@@ -108,12 +115,6 @@ public class UserController {
         }
         if(userRequest.getEmail().length() > 40){
             throw new ValidationException("The email must not exceed 40 characters");
-        }
-        if(userRequest.getPassword() == null || userRequest.getPassword().isEmpty()){
-            throw new ValidationException("The password must not be empty");
-        }
-        if(userRequest.getPassword().length() > 30){
-            throw new ValidationException("The password must not exceed 30 characters");
         }
     }
 

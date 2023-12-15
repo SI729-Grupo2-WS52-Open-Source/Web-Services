@@ -1,14 +1,13 @@
 package com.upc.backend.akira.ecommerce.domain.service.Implement;
 
 import com.upc.backend.akira.shared.exception.model.ValidationException;
-import com.upc.backend.akira.ecommerce.api.dto.UserDTO;
+import com.upc.backend.akira.ecommerce.api.dto.request.UserRequest;
 import com.upc.backend.akira.ecommerce.domain.model.entity.User;
 import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.ecommerce.domain.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class UserServiceImplement implements UserService {
@@ -23,22 +22,21 @@ public class UserServiceImplement implements UserService {
     }
 
     @Override
-    public User createUser(UserDTO userDTO) {
-        User user = modelMapper.map(userDTO, User.class);
+    public User createUser(UserRequest userRequest) {
+        User user = modelMapper.map(userRequest, User.class);
         return userRepository.save(user);
     }
 
     @Override
-    public User updateUser(Long id, UserDTO userDTO) {
+    public User updateUser(Long id, UserRequest userRequest) {
         User existingUser = userRepository.findById(id).orElse(null);
 
         if (existingUser != null) {
-            existingUser.setName(userDTO.getName());
-            existingUser.setSurname(userDTO.getSurname());
-            existingUser.setNumberCellphone(userDTO.getNumberCellphone());
-            existingUser.setEmail(userDTO.getEmail());
-            existingUser.setPassword(userDTO.getPassword());
-            existingUser.setPayment(userDTO.getPayment());
+            existingUser.setName(userRequest.getName());
+            existingUser.setSurname(userRequest.getSurname());
+            existingUser.setNumberCellphone(userRequest.getNumberCellphone());
+            existingUser.setEmail(userRequest.getEmail());
+            existingUser.setPayment(userRequest.getPayment());
 
             return userRepository.save(existingUser);
         } else {
@@ -46,7 +44,8 @@ public class UserServiceImplement implements UserService {
         }
     }
 
-
     @Override
-    public void deleteUserById(Long userId) { userRepository.deleteById(userId);}
+    public void deleteUserById(Long userId) {
+        userRepository.deleteById(userId);
+    }
 }

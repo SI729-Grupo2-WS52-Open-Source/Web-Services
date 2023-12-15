@@ -14,7 +14,6 @@ public class UserResponse {
     private String surname;
     private String numberCellphone;
     private String email;
-    private String password;
     private String payment;
     private Set<Role> roles = new HashSet<>();
 
