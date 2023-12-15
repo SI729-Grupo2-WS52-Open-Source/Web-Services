@@ -7,6 +7,7 @@ import com.upc.backend.akira.ecommerce.domain.repository.UserRepository;
 import com.upc.backend.akira.security.jwt.provider.JwtTokenProvider;
 import com.upc.backend.akira.security.model.dto.request.LoginRequestDto;
 import com.upc.backend.akira.security.model.dto.request.RegisterRequestDto;
+import com.upc.backend.akira.security.model.dto.request.UpdatePasswordRequestDto;
 import com.upc.backend.akira.security.model.dto.response.RegisteredUserResponseDto;
 import com.upc.backend.akira.security.model.dto.response.TokenResponseDto;
 import com.upc.backend.akira.security.service.AuthService;
@@ -61,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         var roles = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo registrar el usuario, no se encontró el rol USER"));
-        user.setRoles(Collections.singleton(roles)); //establece un solo rol
+        user.setRoles(Collections.singleton(roles));
 
         var newUser = userRepository.save(user);
 
@@ -99,6 +100,32 @@ public class AuthServiceImpl implements AuthService {
         var responseData = new TokenResponseDto(token, userId, name, surname, numberCellphone, email, password);
 
         return new ApiResponse<>("Autenticación correcta", EStatus.SUCCESS, responseData);
+    }
+
+    @Override
+    public ApiResponse<Void> updatePassword(UpdatePasswordRequestDto updatePasswordRequest) {
+        String userEmail = updatePasswordRequest.getEmail();
+        String oldPassword = updatePasswordRequest.getOldPassword();
+        String newPassword = updatePasswordRequest.getNewPassword();
+
+        // Obtén el usuario por su correo electrónico
+        User user = userRepository.findByEmail(userEmail);
+
+        // Verifica si el usuario existe
+        if (user == null) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
+        }
+
+        // Verifica si la contraseña actual es correcta
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "La contraseña actual no es correcta");
+        }
+
+        // Actualiza la contraseña con la nueva contraseña cifrada
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return new ApiResponse<>("Contraseña actualizada con éxito", EStatus.SUCCESS, null);
     }
 
 }

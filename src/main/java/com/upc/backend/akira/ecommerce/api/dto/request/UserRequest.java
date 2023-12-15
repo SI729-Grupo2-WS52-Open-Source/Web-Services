@@ -10,6 +10,5 @@ public class UserRequest {
     private String surname;
     private String numberCellphone;
     private String email;
-    private String password;
     private String payment;
 }

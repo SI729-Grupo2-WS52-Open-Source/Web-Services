@@ -2,6 +2,7 @@ package com.upc.backend.akira.security.controller;
 
 import com.upc.backend.akira.security.model.dto.request.LoginRequestDto;
 import com.upc.backend.akira.security.model.dto.request.RegisterRequestDto;
+import com.upc.backend.akira.security.model.dto.request.UpdatePasswordRequestDto;
 import com.upc.backend.akira.security.model.dto.response.RegisteredUserResponseDto;
 import com.upc.backend.akira.security.model.dto.response.TokenResponseDto;
 import com.upc.backend.akira.security.service.AuthService;
@@ -52,4 +53,26 @@ public class AuthController {
         var res = service.registerUser(request);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
+
+    @Operation(summary = "Actualiza la contraseña del usuario")
+    @PutMapping("update-password")
+    public ResponseEntity<ApiResponse<Void>> updatePassword(
+            @RequestParam("email") String email,
+            @RequestParam("oldPassword") String oldPassword,
+            @RequestParam("newPassword") String newPassword
+    ) {
+        var updatePasswordRequest = new UpdatePasswordRequestDto();
+        updatePasswordRequest.setEmail(email);
+        updatePasswordRequest.setOldPassword(oldPassword);
+        updatePasswordRequest.setNewPassword(newPassword);
+
+        var res = service.updatePassword(updatePasswordRequest);
+
+        if (res.isSuccess()) {
+            return new ResponseEntity<>(res, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

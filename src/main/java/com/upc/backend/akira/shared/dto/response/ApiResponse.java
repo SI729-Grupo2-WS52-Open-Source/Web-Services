@@ -12,4 +12,8 @@ public class ApiResponse<T> {
     private String message;
     private EStatus status;
     private T data;
+    public boolean isSuccess() {
+        return EStatus.SUCCESS.equals(status);
+    }
+
 }

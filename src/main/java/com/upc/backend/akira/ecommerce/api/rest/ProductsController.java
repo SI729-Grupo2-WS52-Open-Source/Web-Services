@@ -1,13 +1,14 @@
 package com.upc.backend.akira.ecommerce.api.rest;
 
 
-import com.upc.backend.akira.ecommerce.api.dto.ProductDTO;
 import com.upc.backend.akira.ecommerce.api.dto.request.ProductRequest;
 import com.upc.backend.akira.ecommerce.api.dto.response.ProductResponse;
 import com.upc.backend.akira.shared.exception.model.ValidationException;
 import com.upc.backend.akira.ecommerce.domain.model.entity.Product;
 import com.upc.backend.akira.ecommerce.domain.repository.ProductRepository;
 import com.upc.backend.akira.ecommerce.domain.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+@Tag(name = "Products Controller")
 @RestController
 @RequestMapping("/")
-public class ProductController {
+public class ProductsController {
 
     @Autowired
     private ProductService productService;
@@ -30,7 +33,7 @@ public class ProductController {
     private final ModelMapper modelMapper;
 
 
-    public ProductController(ProductRepository productRepository, ModelMapper modelMapper){
+    public ProductsController(ProductRepository productRepository, ModelMapper modelMapper) {
         this.productRepository = productRepository;
         this.modelMapper = modelMapper;
     }
@@ -38,21 +41,27 @@ public class ProductController {
     //URL: "http://localhost:8080/products"
     //Method: GET
 
+    @Operation(summary = "Obtiene todos los productos")
     @Transactional(readOnly = true)
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(){
-        return new ResponseEntity<List<Product>>(productRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        List<ProductResponse> productResponses = convertToProductResponses(products);
+        return new ResponseEntity<>(productResponses, HttpStatus.OK);
     }
 
     //URL: "http://localhost:8080/products"
     //Method: POST
 
+    //URL: "http://localhost:8080/products"
+    //Method: POST
+
+    @Operation(summary = "Registra un producto")
     @Transactional
     @PostMapping("/products")
     public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
         ValidateProductRequest(productRequest);
-        ProductDTO productDTO = modelMapper.map(productRequest, ProductDTO.class);
-        Product createdProduct = productService.createProduct(productDTO);
+        Product createdProduct = productService.createProduct(productRequest);
         ProductResponse productResponse = modelMapper.map(createdProduct, ProductResponse.class);
         return new ResponseEntity<>(productResponse, HttpStatus.CREATED);
     }
@@ -60,15 +69,15 @@ public class ProductController {
 
     //URL: "http://localhost:8080/products/{id}"
     //Method: PUT
+    @Operation(summary = "Actualiza un producto")
     @PutMapping("/products/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
         if (!productRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
         ValidateProductRequest(productRequest);
-        ProductDTO productDTO = modelMapper.map(productRequest, ProductDTO.class);
-        productDTO.setId(id);
-        Product updatedProduct = productService.updateProduct(productDTO);
+        productRequest.setId(id);
+        Product updatedProduct = productService.updateProduct(productRequest);
         ProductResponse productResponse = modelMapper.map(updatedProduct, ProductResponse.class);
         return new ResponseEntity<>(productResponse, HttpStatus.OK);
     }
@@ -76,7 +85,7 @@ public class ProductController {
 
     //URL: "http://localhost:8080/products/{id}"
     //Method: DELETE
-
+    @Operation(summary = "Elimina un producto")
     @Transactional
     @DeleteMapping("/products/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
@@ -90,6 +99,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/{id}"
     // Method: GET
 
+    @Operation(summary = "Obtiene un usuario")
     @Transactional(readOnly = true)
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
@@ -106,6 +116,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/anime"
     // Method: GET
 
+    @Operation(summary = "Obtiene todos los productos con categoría Anime")
     @Transactional(readOnly = true)
     @GetMapping("/products/anime")
     public ResponseEntity<List<Product>> getAnimeProducts() {
@@ -116,6 +127,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/kpop"
     // Method: GET
 
+    @Operation(summary = "Obtiene todos los productos con categoría k-pop")
     @Transactional(readOnly = true)
     @GetMapping("/products/kpop")
     public ResponseEntity<List<Product>> getKpopProducts() {
@@ -126,6 +138,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/lectura"
     // Method: GET
 
+    @Operation(summary = "Obtiene todos los productos con categoría Lectura")
     @Transactional(readOnly = true)
     @GetMapping("/products/lectura")
     public ResponseEntity<List<Product>> getLecturaProducts() {
@@ -135,9 +148,10 @@ public class ProductController {
 
     // URL: "http://localhost:8080/products/popular"
     // Method: GET
+    @Operation(summary = "Obtiene todos los productos populares")
     @Transactional(readOnly = true)
     @GetMapping("/products/popular")
-    public ResponseEntity<List<Product>> getPopularProducts(){
+    public ResponseEntity<List<Product>> getPopularProducts() {
         List<Product> popularProducts = productRepository.findRandomTop6Products();
         return new ResponseEntity<>(popularProducts, HttpStatus.OK);
     }
@@ -145,6 +159,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/popular/anime"
     // Method: GET
 
+    @Operation(summary = "Obtiene todos los productos populares de la categoría Anime")
     @Transactional(readOnly = true)
     @GetMapping("/products/popular/anime")
     public ResponseEntity<List<Product>> getPopularAnimeProducts() {
@@ -155,6 +170,7 @@ public class ProductController {
     // URL: "http://localhost:8080/products/popular/kpop"
     // Method: GET
 
+    @Operation(summary = "Obtiene todos los productos populares de la categoría k-pop")
     @Transactional(readOnly = true)
     @GetMapping("/products/popular/kpop")
     public ResponseEntity<List<Product>> getPopularKpopProducts() {
@@ -165,6 +181,8 @@ public class ProductController {
     // URL: "http://localhost:8080/products/popular/lectura"
     // Method: GET
 
+
+    @Operation(summary = "Obtiene todos los productos populares de la categoría Lectura")
     @Transactional(readOnly = true)
     @GetMapping("/products/popular/lectura")
     public ResponseEntity<List<Product>> getPopularLecturaProducts() {
@@ -174,6 +192,8 @@ public class ProductController {
 
     // URL: "http://localhost:8080/products/search"
     // Method: GET
+
+    @Operation(summary = "Busqueda de productos")
 
     @Transactional(readOnly = true)
     @GetMapping("/products/search")
@@ -236,6 +256,14 @@ public class ProductController {
         }
 
 
+    }
+
+    private List<ProductResponse> convertToProductResponses(List<Product> products) {
+        List<ProductResponse> productResponses = new ArrayList<>();
+        for (Product product : products) {
+            productResponses.add(modelMapper.map(product, ProductResponse.class));
+        }
+        return productResponses;
     }
 
 }
